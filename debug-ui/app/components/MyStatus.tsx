@@ -161,6 +161,12 @@ const MyStatus = ({
     const cancelParams: WrapperCancelOrderParams = {
       clientOrderId: Number(clientOrderId),
     };
+
+    if (Number.isNaN(cancelParams.clientOrderId)) {
+      toast.error('cancelOrder: enter a valid client order id');
+      return;
+    }
+
     const cancelOrderIx: TransactionInstruction =
       mClient.cancelOrderIx(cancelParams);
     try {
@@ -187,15 +193,20 @@ const MyStatus = ({
       network,
     );
 
-    const cancelAllIx = mClient.cancelAllIx();
+    const cancelAllIxs = await mClient.cancelAllOnCoreIx();
+
+    if (cancelAllIxs.length === 0) {
+      toast.info('cancelAllOrders: no orders to cancel');
+      return;
+    }
 
     try {
-      const sig = await sendTransaction(
-        new Transaction().add(cancelAllIx),
-        conn,
-      );
-      console.log(`cancelAllOrders: ${getSolscanSigUrl(sig, network)}`);
-      toast.success(`cancelAllOrders: ${getSolscanSigUrl(sig, network)}`);
+      for (const ix of cancelAllIxs) {
+        const tx = new Transaction().add(ix);
+        const sig = await sendTransaction(tx, conn, { skipPreflight: true });
+        console.log(`cancelAllOrders: ${getSolscanSigUrl(sig, network)}`);
+      }
+      toast.success('cancelAllOrders: all orders canceled');
     } catch (err) {
       console.log(err);
       toast.error(`cancelAllOrders: ${ensureError(err).message}`);
