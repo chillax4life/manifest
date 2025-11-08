@@ -33,7 +33,7 @@ export const setupClient = async (
   connected: boolean,
   sendTransaction: SendTransaction,
   network: WalletAdapterNetwork | null,
-): Promise<ManifestClient> => {
+): Promise<{ manifestClient: ManifestClient; wrapper: UiWrapper }> => {
   if (!connected || !signerPub) {
     throw new Error('must be connected before setting up client');
   }
@@ -98,13 +98,22 @@ export const setupClient = async (
     await sleep(5_000);
   }
 
-  const mClient = await ManifestClient.getClientForMarketNoPrivateKey(
+  const wrapperAccount = await UiWrapper.fetchFirstUserWrapper(conn, signerPub);
+  if (!wrapperAccount) {
+    throw new Error('wrapper setup failed: wrapper account not found');
+  }
+  const wrapper = UiWrapper.loadFromBuffer({
+    address: wrapperAccount.pubkey,
+    buffer: wrapperAccount.account.data,
+  });
+
+  const manifestClient = await ManifestClient.getClientForMarketNoPrivateKey(
     conn,
     marketPub,
     signerPub as PublicKey,
   );
 
-  return mClient;
+  return { manifestClient, wrapper };
 };
 
 export const getSolscanUrl = (

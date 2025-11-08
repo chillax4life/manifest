@@ -76,7 +76,7 @@ const MyStatus = ({
 
   const deposit = async (): Promise<void> => {
     const marketPub = new PublicKey(marketAddress);
-    const mClient = await setupClient(
+    const { manifestClient: mClient } = await setupClient(
       conn,
       marketPub,
       signerPub,
@@ -116,7 +116,7 @@ const MyStatus = ({
       throw new Error('must be connected before setting up client');
     }
 
-    const mClient = await setupClient(
+    const { manifestClient: mClient } = await setupClient(
       conn,
       marketPub,
       signerPub,
@@ -149,7 +149,7 @@ const MyStatus = ({
 
   const cancelOrder = async (): Promise<void> => {
     const marketPub = new PublicKey(marketAddress);
-    const mClient = await setupClient(
+    const { manifestClient: mClient } = await setupClient(
       conn,
       marketPub,
       signerPub as PublicKey,
@@ -178,7 +178,7 @@ const MyStatus = ({
 
   const cancelAllOrders = async (): Promise<void> => {
     const marketPub = new PublicKey(marketAddress);
-    const mClient = await setupClient(
+    const { manifestClient: mClient } = await setupClient(
       conn,
       marketPub,
       signerPub as PublicKey,
